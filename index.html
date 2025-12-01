@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fetch API Demo – HTTP Methods</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        background: #f5f6fa;
+        color: #2f3640;
+    }
+
+    header {
+        background: #273c75;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    button {
+        flex: 1 1 45%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background: #40739e;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-weight: 600;
+    }
+
+    button:hover {
+        background: #3498db;
+    }
+
+    #outputBox {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f0f3f7;
+        border-radius: 10px;
+        min-height: 250px;
+        font-family: Consolas, monospace;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        border-left: 4px solid #273c75;
+    }
+</style>
+</head>
+
+<body>
+
+<header>HTTP Methods Demo using Fetch API</header>
+
+<div class="container">
+    <h2>Perform API Actions</h2>
+
+    <div class="buttons">
+        <button onclick="doGet()">GET Data</button>
+        <button onclick="doPost()">POST Data</button>
+        <button onclick="doPut()">PUT Update</button>
+        <button onclick="doPatch()">PATCH Update</button>
+        <button onclick="doDelete()">DELETE Data</button>
+    </div>
+
+    <h3>Response Output:</h3>
+    <div id="outputBox">Click a button to see API results here...</div>
+</div>
+
+<script>
+const API = "https://jsonplaceholder.typicode.com/todos";
+
+function showOutput(data) {
+    document.getElementById("outputBox").textContent = 
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+function doGet() {
+    fetch(API)
+        .then(res => res.json())
+        .then(data => showOutput(data))
+        .catch(err => showOutput("Error: " + err));
+}
+
+function doPost() {
+    fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            userId: 10,
+            title: "Professional UI Example",
+            completed: false
+        })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
+}
+
+function doPut() {
+    fetch(`${API}/5`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            userId: 1,
+            id: 5,
+            title: "Updated using PUT Method",
+            completed: true
+        })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
+}
+
+function doPatch() {
+    fetch(`${API}/1`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: true })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
+}
+
+function doDelete() {
+    fetch(`${API}/1`, { method: "DELETE" })
+        .then(() => showOutput("Resource deleted successfully."));
+}
+</script>
+
+</body>
+</html>
