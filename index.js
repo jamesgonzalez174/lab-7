@@ -1,115 +1,129 @@
 /*
-  index.js — IP -> Geolocation -> Weather flow
-  - Fetch public IP (ipify)
-  - Geolocate IP (ipinfo.io)
-  - Fetch current weather (Open-Meteo)
-  Includes UI updates and error handling.
+  index.js — Completed Lab Version
+  One button per API (Part A + Part B)
 */
 
-function showText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.innerText = text;
+/* ==================== PART A — HTTP METHODS ==================== */
+
+const API = "https://jsonplaceholder.typicode.com/todos";
+
+function showOutput(data) {
+    document.getElementById("outputBox").textContent =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
 
-function setStatus(msg) {
-  showText('flowStatus', msg);
+// GET
+function doGet() {
+    fetch(API)
+        .then(res => res.json())
+        .then(data => showOutput(data));
 }
 
-async function runLab() {
-  setStatus('Fetching public IP...');
-  showText('ip', '—');
-  showText('location', '—');
-  showText('coords', '—');
-  showText('weather', '—');
-
-  try {
-    const ipRes = await fetch('https://api.ipify.org?format=json');
-    if (!ipRes.ok) throw new Error(`IP API error ${ipRes.status}`);
-    const ipData = await ipRes.json();
-    const ip = ipData.ip || 'unknown';
-    showText('ip', ip);
-
-    setStatus('Geolocating IP...');
-    // ipinfo gives `loc` as "lat,lon"
-    const locRes = await fetch(`https://ipinfo.io/${ip}/json`);
-    if (!locRes.ok) throw new Error(`Geolocation API error ${locRes.status}`);
-    const locData = await locRes.json();
-    const city = locData.city || locData.region || 'Unknown';
-    const region = locData.region || '';
-    const country = locData.country || '';
-    showText('location', `${city}${region ? ', ' + region : ''}${country ? ', ' + country : ''}`);
-
-    const loc = locData.loc || '';
-    let latitude = null, longitude = null;
-    if (loc) {
-      const parts = loc.split(',');
-      latitude = parseFloat(parts[0]);
-      longitude = parseFloat(parts[1]);
-      showText('coords', `${latitude}, ${longitude}`);
-    } else if (locData.latitude && locData.longitude) {
-      latitude = parseFloat(locData.latitude);
-      longitude = parseFloat(locData.longitude);
-      showText('coords', `${latitude}, ${longitude}`);
-    } else {
-      showText('coords', 'Unknown');
-    }
-
-    if (latitude == null || isNaN(latitude) || longitude == null || isNaN(longitude)) {
-      // If we don't have coordinates, try a city-based weather lookup fallback
-      setStatus('Fetching weather by city name (fallback)...');
-      try {
-        const wttr = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
-        if (!wttr.ok) throw new Error(`wttr.in error ${wttr.status}`);
-        const wttrJson = await wttr.json();
-        const tempC = wttrJson.current_condition?.[0]?.temp_C;
-        showText('weather', tempC ? `${tempC} °C (via city)` : 'Unavailable');
-        setStatus('Done');
-        return;
-      } catch (err) {
-        showText('weather', 'Unavailable — ' + err.message);
-        setStatus('Done (partial)');
-        return;
-      }
-    }
-
-    setStatus('Fetching weather by coordinates...');
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`);
-    if (!weatherRes.ok) throw new Error(`Weather API error ${weatherRes.status}`);
-    const weatherJson = await weatherRes.json();
-    const cw = weatherJson.current_weather || {};
-    const temp = cw.temperature !== undefined ? `${cw.temperature} °C` : 'N/A';
-    const wind = cw.windspeed !== undefined ? `${cw.windspeed} km/h` : 'N/A';
-    showText('weather', `${temp} — wind ${wind}`);
-    // 4️⃣ API #4 — Fetch weather by city name (wttr.in) using the geolocation result
-    setStatus('Fetching weather by city...');
-    try {
-      const cityForQuery = city || region || country || '';
-      if (cityForQuery) {
-        const wttrRes = await fetch(`https://wttr.in/${encodeURIComponent(cityForQuery)}?format=j1`);
-        if (!wttrRes.ok) throw new Error(`wttr.in error ${wttrRes.status}`);
-        const wttrJson = await wttrRes.json();
-        const tempC = wttrJson.current_condition?.[0]?.temp_C;
-        const feelsLike = wttrJson.current_condition?.[0]?.FeelsLikeC;
-        showText('weatherCity', tempC ? `${tempC} °C (feels ${feelsLike} °C)` : 'Unavailable');
-      } else {
-        showText('weatherCity', 'No city available');
-      }
-    } catch (errCity) {
-      showText('weatherCity', 'Error: ' + errCity.message);
-      console.warn('City weather error', errCity);
-    }
-
-    setStatus('Done');
-  } catch (err) {
-    setStatus('Error');
-    showText('weather', 'Error: ' + err.message);
-    console.error(err);
-  }
+// POST
+function doPost() {
+    fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: 10, title: "POST Example", completed: false })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('runFlowBtn');
-  if (btn) btn.addEventListener('click', () => {
-    runLab();
-  });
-});
+// PUT
+function doPut() {
+    fetch(`${API}/5`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: 1, id: 5, title: "PUT Updated", completed: true })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
+}
+
+// PATCH
+function doPatch() {
+    fetch(`${API}/1`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: true })
+    })
+    .then(res => res.json())
+    .then(data => showOutput(data));
+}
+
+// DELETE
+function doDelete() {
+    fetch(`${API}/1`, { method: "DELETE" })
+        .then(() => showOutput("Deleted successfully"));
+}
+
+
+/* ==================== PART B — FOUR APIs ==================== */
+
+// 1️⃣ API #1 – Public IP
+async function api1() {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    document.getElementById("ip").innerText = data.ip;
+    showOutput(data);
+}
+
+// 2️⃣ API #2 – Geolocate IP
+async function api2() {
+    const ip = document.getElementById("ip").innerText;
+
+    if (ip === "—") return alert("Run API #1 first!");
+
+    const res = await fetch(`https://ipinfo.io/${ip}/json`);
+    const data = await res.json();
+
+    document.getElementById("location").innerText =
+        `${data.city}, ${data.region}, ${data.country}`;
+
+    if (data.loc) {
+        document.getElementById("coords").innerText = data.loc;
+    }
+
+    showOutput(data);
+}
+
+// 3️⃣ API #3 – Weather by Coordinates
+async function api3() {
+    const coords = document.getElementById("coords").innerText;
+
+    if (coords === "—") return alert("Run API #2 first!");
+
+    const [lat, lon] = coords.split(",");
+
+    const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+    );
+    const data = await res.json();
+
+    const cw = data.current_weather;
+    document.getElementById("weather").innerText =
+        `${cw.temperature}°C — wind ${cw.windspeed} km/h`;
+
+    showOutput(data);
+}
+
+// 4️⃣ API #4 – Weather by City
+async function api4() {
+    const location = document.getElementById("location").innerText;
+
+    if (location === "—") return alert("Run API #2 first!");
+
+    const city = location.split(",")[0];
+
+    const res = await fetch(`https://wttr.in/${city}?format=j1`);
+    const data = await res.json();
+
+    const temp = data.current_condition?.[0]?.temp_C;
+    const feels = data.current_condition?.[0]?.FeelsLikeC;
+
+    document.getElementById("weatherCity").innerText =
+        `${temp}°C (feels like ${feels}°C)`;
+
+    showOutput(data);
+}
