@@ -96,6 +96,21 @@
         <button onclick="doDelete()">DELETE Data</button>
     </div>
 
+    <h3>IP → Geolocation → Weather</h3>
+    <p>Click the button to perform three chained API calls: fetch public IP, geolocate the IP, then fetch current weather for that location.</p>
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+        <button id="runFlowBtn" style="flex:0 0 220px;background:#44bd32">Get My IP & Weather</button>
+        <div id="flowStatus" style="align-self:center;color:#2f3640;font-weight:600">Idle</div>
+    </div>
+
+    <div id="flowResults" style="background:#fff;padding:12px;border-radius:8px;border:1px solid #e6eef8">
+        <div><strong>IP:</strong> <span id="ip">—</span></div>
+        <div><strong>Location:</strong> <span id="location">—</span></div>
+        <div><strong>Coordinates:</strong> <span id="coords">—</span></div>
+        <div><strong>Weather (coordinates):</strong> <span id="weather">—</span></div>
+        <div><strong>Weather (city):</strong> <span id="weatherCity">—</span></div>
+    </div>
+
     <h3>Response Output:</h3>
     <div id="outputBox">Click a button to see API results here...</div>
 </div>
@@ -104,6 +119,9 @@
 const API = "https://jsonplaceholder.typicode.com/todos";
 
 function showOutput(data) {
+
+<!-- App script for IP → Geolocation → Weather flow -->
+<script src="index.js" defer></script>
     document.getElementById("outputBox").textContent = 
         typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
